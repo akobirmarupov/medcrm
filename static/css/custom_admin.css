@@ -1,0 +1,257 @@
+/* ==========================================================
+   MEDCRM PREMIUM ADMIN PANEL
+   ========================================================== */
+
+/* FONT */
+body {
+    font-family: "Poppins", sans-serif !important;
+    background: #f4f7fc !important;
+}
+
+/* ==========================================================
+   LOGO
+   ========================================================== */
+
+.brand-link {
+    height: 90px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: linear-gradient(
+        135deg,
+        #ff4d4d,
+        #ff9800,
+        #4caf50,
+        #2196f3
+    ) !important;
+}
+
+.brand-link .brand-image {
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    border: 4px solid white !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,.15) !important;
+}
+
+.brand-link .brand-text {
+    color: white !important;
+    font-size: 22px !important;
+    font-weight: 700 !important;
+}
+
+/* ==========================================================
+   TOP NAVBAR
+   ========================================================== */
+
+.main-header {
+    background: linear-gradient(
+        135deg,
+        #ff4d4d,
+        #ff9800
+    ) !important;
+
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,.08);
+}
+
+.main-header .nav-link,
+.main-header .nav-link i {
+    color: white !important;
+}
+
+/* ==========================================================
+   SIDEBAR
+   ========================================================== */
+
+.main-sidebar {
+    background: #ffffff !important;
+    box-shadow: 5px 0 25px rgba(0,0,0,.08);
+}
+
+/* Menu elementlari */
+
+.nav-sidebar .nav-link {
+    margin: 4px 10px;
+    border-radius: 12px;
+    transition: all .25s ease;
+    font-weight: 600;
+}
+
+.nav-sidebar .nav-link:hover {
+    transform: translateX(5px);
+    background: #eef4ff !important;
+}
+
+/* ACTIVE MENU */
+
+.nav-sidebar .nav-item > .nav-link.active {
+    background: linear-gradient(
+        135deg,
+        #2196f3,
+        #00c6ff
+    ) !important;
+
+    color: white !important;
+
+    box-shadow: 0 6px 15px rgba(33,150,243,.3);
+}
+
+.nav-sidebar .nav-item > .nav-link.active i {
+    color: white !important;
+}
+
+/* ==========================================================
+   APP GROUP COLORS
+   ========================================================== */
+
+/* ACCOUNTS */
+
+.nav-sidebar a[href*="/accounts/"] {
+    background: linear-gradient(
+        135deg,
+        #fff3cd,
+        #ffe082
+    ) !important;
+
+    color: #d35400 !important;
+}
+
+/* COMMON */
+
+.nav-sidebar a[href*="/common/"] {
+    background: linear-gradient(
+        135deg,
+        #e1bee7,
+        #ce93d8
+    ) !important;
+
+    color: #6a1b9a !important;
+}
+
+/* TOKEN */
+
+.nav-sidebar a[href*="/authtoken/"] {
+    background: linear-gradient(
+        135deg,
+        #d4edda,
+        #81c784
+    ) !important;
+
+    color: #1b5e20 !important;
+}
+
+/* ==========================================================
+   CARDS
+   ========================================================== */
+
+.card {
+    border: none !important;
+    border-radius: 20px !important;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,.08) !important;
+}
+
+.card-header {
+    background: linear-gradient(
+        135deg,
+        #2196f3,
+        #00c6ff
+    ) !important;
+
+    color: white !important;
+    border: none !important;
+    font-weight: 700;
+}
+
+/* ==========================================================
+   TABLES
+   ========================================================== */
+
+.table {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.table thead {
+    background: linear-gradient(
+        135deg,
+        #ff4d4d,
+        #ff9800
+    ) !important;
+
+    color: white !important;
+}
+
+.table tbody tr:hover {
+    background: #f1f8ff !important;
+}
+
+/* ==========================================================
+   BUTTONS
+   ========================================================== */
+
+.btn {
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+}
+
+.btn-success {
+    background: linear-gradient(
+        135deg,
+        #43a047,
+        #66bb6a
+    ) !important;
+    border: none !important;
+}
+
+.btn-danger {
+    background: linear-gradient(
+        135deg,
+        #e53935,
+        #ef5350
+    ) !important;
+    border: none !important;
+}
+
+.btn-info {
+    background: linear-gradient(
+        135deg,
+        #2196f3,
+        #03a9f4
+    ) !important;
+    border: none !important;
+}
+
+.btn-warning {
+    background: linear-gradient(
+        135deg,
+        #ff9800,
+        #ffc107
+    ) !important;
+    border: none !important;
+}
+
+/* ==========================================================
+   DASHBOARD BOXES
+   ========================================================== */
+
+.small-box {
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,.08) !important;
+}
+
+.small-box:hover {
+    transform: translateY(-3px);
+}
+
+/* ==========================================================
+   FOOTER
+   ========================================================== */
+
+.main-footer {
+    background: white !important;
+    border-top: none !important;
+}
