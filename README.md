@@ -67,25 +67,7 @@ python manage.py runserver
 
 ---
 
-## 🔐 Environment Variables
 
-```env
-DB_NAME=medcrm_db
-DB_USER=postgres
-DB_PASSWORD=your_password
-DB_HOST=127.0.0.1
-DB_PORT=5432
-
-EMAIL_HOST_USER=your@gmail.com
-EMAIL_HOST_PASSWORD=your_app_password
-EMAIL_CODE_TTL_SECONDS=300
-
-ESKIZ_EMAIL=your@gmail.com
-ESKIZ_PASSWORD=your_password
-ESKIZ_SENDER=4546
-```
-
----
 
 ## 🔴 Redis Cache
 
