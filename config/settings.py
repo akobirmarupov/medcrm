@@ -177,11 +177,6 @@ STATICFILES_DIRS = [
 # Frontend ilova URL manzili (emaildagi tasdiqlash havolasi uchun)
 FRONTEND_URL = "https://Marketol.com"
 
-REST_FRAMEWORK = {
-    
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-}
-
 
 
 SPECTACULAR_SETTINGS = {
@@ -207,21 +202,19 @@ SWAGGER_SETTINGS = {
 
 
 REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-}
-
-
-REST_FRAMEWORK = {
+    
     "DEFAULT_THROTTLE_RATES": {
-        "login": "5/minute",      # 1 daqiqada 5 ta
-        "register": "3/minute",   # 1 daqiqada 3 ta
+        "login": "5/minute",
+        "register": "3/minute",
         "anon_burst": "30/minute",
         "auth_burst": "60/minute",
     }
 }
-
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),  
