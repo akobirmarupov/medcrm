@@ -59,6 +59,7 @@ EXTERNAL_APPS = [
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'drf_yasg',
+    "drf_spectacular",
 ]
 
 
@@ -113,23 +114,15 @@ DATABASES = {
 }
 
 
+#redis cache
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+    }
+}
 
-# DATABASE_URL = os.environ.get('DATABASE_URL')
 
-# if DATABASE_URL:
-#     DATABASES = {
-#         'default': dj_database_url.parse(DATABASE_URL)
-#     }
-# else:
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.sqlite3',
-#             'NAME': BASE_DIR / 'db.sqlite3',
-#         }
-#     }
-
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -184,19 +177,21 @@ STATICFILES_DIRS = [
 # Frontend ilova URL manzili (emaildagi tasdiqlash havolasi uchun)
 FRONTEND_URL = "https://Marketol.com"
 
+REST_FRAMEWORK = {
+    
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
 
 
-# SWAGGER_SETTINGS = {
-#     'SECURITY_DEFINITIONS': {
-#         'Bearer': {
-#             'type': 'apiKey',
-#             'name': 'Authorization',
-#             'in': 'header',
-#             'description': 'JWT Authorization header. Example: Bearer <your_token>',
-#         },
-#     },
-#     'USE_SESSION_AUTH': False,
-# }
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "MedCRM API",
+    "DESCRIPTION": "Tibbiy klinika boshqaruv tizimi",
+    "VERSION": "1.0.0",
+}
+
+
+
 
 SWAGGER_SETTINGS = {
     'DEFAULT_API_URL': 'https://c87089dbf506e1bd-84-94-248.serveousercontent.com',
@@ -218,6 +213,15 @@ REST_FRAMEWORK = {
 }
 
 
+REST_FRAMEWORK = {
+    "DEFAULT_THROTTLE_RATES": {
+        "login": "5/minute",      # 1 daqiqada 5 ta
+        "register": "3/minute",   # 1 daqiqada 3 ta
+        "anon_burst": "30/minute",
+        "auth_burst": "60/minute",
+    }
+}
+
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),  
@@ -238,98 +242,12 @@ EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_CODE_TTL_SECONDS = 300
 
 
 # Frontend ilova URL manzili (emaildagi tasdiqlash havolasi uchun)
 FRONTEND_URL = "https://zentaskob.uz"
 
-
-# JAZZMIN_SETTINGS = {
-#     "site_title": "MedCRM Admin",
-#     "site_header": "MedCRM",
-#     "site_brand": "MedCRM",
-#     "site_logo": "images/logo.png",  # static/images/logo.png
-#     "site_logo_classes": "img-circle elevation-3",
-#     "site_icon": None,
-#     "welcome_sign": "MedCRM boshqaruv paneliga xush kelibsiz",
-#     "copyright": "MedCRM © 2026",
-#     "search_model": ["accounts.User"],
-#     "user_avatar": None,
-
-#     "topmenu_links": [
-#         {"name": "Bosh sahifa", "url": "admin:index", "permissions": ["auth.view_user"]},
-#         {"name": "Sayt", "url": "/", "new_window": True},
-#     ],
-
-#     "usermenu_links": [
-#         {"name": "Profil", "url": "admin:accounts_user_change", "icon": "fas fa-user"},
-#     ],
-
-#     "show_sidebar": True,
-#     "navigation_expanded": True,
-
-#     "hide_apps": [],
-#     "hide_models": [],
-
-#     "icons": {
-#         "auth": "fas fa-users-cog",
-#         "auth.user": "fas fa-user",
-#         "auth.Group": "fas fa-users",
-#         "accounts.User": "fas fa-user-md",
-#         "accounts.Profile": "fas fa-id-card",
-#         "authtoken.Token": "fas fa-key",
-#     },
-
-#     "default_icon_parents": "fas fa-chevron-circle-right",
-#     "default_icon_children": "fas fa-circle",
-
-#     "related_modal_active": True,
-#     "custom_css": "css/custom_admin.css",  # ← CSS shu yerda ulanadi
-#     "custom_js": None,
-#     "use_google_fonts_cdn": True,
-#     "show_ui_builder": False,
-
-#     "changeform_format": "horizontal_tabs",
-#     "changeform_format_overrides": {
-#         "auth.user": "collapsible",
-#         "auth.group": "vertical_tabs",
-#     },
-# }
-
-# JAZZMIN_UI_TWEAKS = {
-#     "navbar_small_text": False,
-#     "footer_small_text": False,
-#     "body_small_text": False,
-#     "brand_small_text": False,
-#     "brand_colour": "navbar-primary",
-#     "accent": "accent-primary",
-#     "navbar": "navbar-white navbar-light",
-#     "no_navbar_border": False,
-#     "navbar_fixed": True,
-#     "layout_boxed": False,
-#     "footer_fixed": False,
-#     "sidebar_fixed": True,
-#     "sidebar": "sidebar-dark-primary",
-#     "sidebar_nav_small_text": False,
-#     "sidebar_disable_expand": False,
-#     "sidebar_nav_child_indent": True,
-#     "sidebar_nav_compact_style": False,
-#     "sidebar_nav_legacy_style": False,
-#     "sidebar_nav_flat_style": False,
-#     "theme": "default",
-#     "dark_mode_theme": None,
-#     "button_classes": {
-#         "primary": "btn-primary",
-#         "secondary": "btn-outline-secondary",
-#         "info": "btn-info",
-#         "warning": "btn-warning",
-#         "danger": "btn-danger",
-#         "success": "btn-success",
-#     },
-# }
-
-
-# settings.py
 
 UNFOLD = {
     "SITE_TITLE": "MedCore CRM Admin",

@@ -124,13 +124,17 @@ class CustomUserAdmin(BaseUserAdmin, ModelAdmin):
             form.base_fields["username"].widget.attrs["autofocus"] = False
         return form
 
+    def save_model(self, request, obj, form, change):
+        # username = phone_number — IntegrityError ni hal qiladi
+        obj.username = obj.phone_number
+        super().save_model(request, obj, form, change)
+
 
 # ──────────────────────────────────────────────
 #  Profile Admin
 # ──────────────────────────────────────────────
 @admin.register(Profile)
 class ProfileAdmin(ModelAdmin):
-    # "avatar" o'rniga "avatar_thumbnail" — rasmni ko'rsatadi
     list_display = ("avatar_thumbnail", "user", "address", "birth_date")
     search_fields = (
         "user__phone_number",
@@ -157,7 +161,6 @@ class ProfileAdmin(ModelAdmin):
         ),
     )
 
-    # ── Kichik doira rasm (list sahifasida) ──────────────
     @admin.display(description="Avatar")
     def avatar_thumbnail(self, obj):
         if obj.avatar:
@@ -167,7 +170,6 @@ class ProfileAdmin(ModelAdmin):
                 'border-radius:50%; border:2px solid #6366f1;" />',
                 obj.avatar.url,
             )
-        # Avatar yo'q bo'lsa — placeholder
         return format_html(
             '<div style="width:48px; height:48px; border-radius:50%; '
             'background:#374151; display:flex; align-items:center; '
