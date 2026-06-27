@@ -52,6 +52,7 @@ DJANGO_APPS = [
 LOCAL_APPS = [
     'accounts',
     'common',
+    'organizations',
 ]
 
 EXTERNAL_APPS = [
@@ -344,32 +345,43 @@ UNFOLD = {
         "show_all_applications": False, # Tartibsiz chiqmasligi uchun o'zimiz ramkalaymiz
         
         "navigation": [
-            {
-                "title": "Asosiy Dashboard",
-                "separator": True,
-                "items": [
-                    {"title": "Bosh sahifa", "icon": "space_dashboard", "link": "/admin/"},
-                ],
-            },
-            {
-                "title": "Foydalanuvchilar (Accounts)",
-                "separator": True,
-                "collapsible": False,
-                "items": [
-                    {"title": "Xodimlar (Users)", "icon": "group", "link": "/admin/accounts/user/"},
-                    {"title": "Profillar (Profiles)", "icon": "contact_page", "link": "/admin/accounts/profile/"},
-                ],
-            },
-            {
-                "title": "Xavfsizlik Tizimi",
-                "separator": True,
-                "collapsible": True,
-                "items": [
-                    {"title": "Guruhlar", "icon": "shield_person", "link": "/admin/auth/group/"},
-                    {"title": "API Tokenlar", "icon": "key", "link": "/admin/authtoken/tokenproxy/"},
-                ],
-            },
+    {
+        "title": "Asosiy Dashboard",
+        "separator": True,
+        "items": [
+            {"title": "Bosh sahifa", "icon": "space_dashboard", "link": "/admin/"},
         ],
+    },
+    {
+        "title": "Foydalanuvchilar (Accounts)",
+        "separator": True,
+        "collapsible": False,
+        "items": [
+            {"title": "Xodimlar (Users)", "icon": "group", "link": "/admin/accounts/user/"},
+            {"title": "Profillar (Profiles)", "icon": "contact_page", "link": "/admin/accounts/profile/"},
+        ],
+    },
+    {
+        "title": "Tashkilot (Organizations)",
+        "separator": True,
+        "collapsible": False,
+        "items": [
+            {"title": "Klinikalar", "icon": "local_hospital", "link": "/admin/organizations/clinic/"},
+            {"title": "Filiallar", "icon": "account_balance", "link": "/admin/organizations/branch/"},
+            {"title": "Bo'limlar", "icon": "meeting_room", "link": "/admin/organizations/department/"},
+            {"title": "Xonalar", "icon": "door_front", "link": "/admin/organizations/room/"},
+        ],
+    },
+    {
+        "title": "Xavfsizlik Tizimi",
+        "separator": True,
+        "collapsible": True,
+        "items": [
+            {"title": "Guruhlar", "icon": "shield_person", "link": "/admin/auth/group/"},
+            {"title": "API Tokenlar", "icon": "key", "link": "/admin/authtoken/tokenproxy/"},
+        ],
+    },
+],
     },
 }
 

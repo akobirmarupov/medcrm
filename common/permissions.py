@@ -88,3 +88,25 @@ class IsOwnerOrMedicalStaff(permissions.BasePermission):
         owner_field = getattr(view, "owner_field", "user")
         owner = getattr(obj, owner_field, None)
         return owner == user
+    
+
+class IsStaffWithoutAccountant(permissions.BasePermission):
+    """
+    Admin, Doctor, Nurse, Receptionist — Accountant va Patient YO'Q.
+    Ishlatish: Department, Room kabi bo'lim/xona ko'rish uchun.
+    """
+    message = "Bu resurs Accountant va Patient uchun ruxsat etilmagan!"
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        return check_role(request, ["ADMIN", "DOCTOR", "NURSE", "RECEPTIONIST"])
+
+
+class IsStaffWithAccountant(permissions.BasePermission):
+    """
+    Admin, Doctor, Nurse, Receptionist, Accountant — faqat Patient YO'Q.
+    Ishlatish: Clinic, Branch kabi umumiy ma'lumotlar uchun.
+    """
+    message = "Bu resurs faqat Patient uchun ruxsat etilmagan!"
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        return check_role(request, ["ADMIN", "DOCTOR", "NURSE", "RECEPTIONIST", "ACCOUNTANT"])
