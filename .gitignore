@@ -11,3 +11,6 @@ ENV/
 
 /staticfiles/
 /media/
+
+logs/
+*.log

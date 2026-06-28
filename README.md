@@ -197,6 +197,205 @@ Qaysi variant ishlatilishi **klinika boshlig'i bilan kelishilgandan** keyin aniq
 
 ---
 
+
+---
+## 🏥 Clinic & Branch Management API
+
+### Overview
+This module provides a complete REST API for managing clinics and their branches within a healthcare management system. It enables authorized personnel to create, view, update, and delete clinic and branch records with role-based access control.
+
+---
+
+### What Was Built
+
+**Clinic Management**
+- List all registered clinics with basic info (name, phone, active status)
+- Create new clinics with full details including legal name, address, contact info, logo, and license number
+- Retrieve detailed clinic information including live branch count
+- Update clinic details (full or partial)
+- Delete clinics — only allowed when no branches are attached
+
+**Branch Management**
+- List all branches across all clinics
+- Create new branches linked to a specific clinic
+- Retrieve detailed branch information
+- Update branch details
+- Delete branches
+- Automatic validation to ensure only one main branch (`is_main`) exists per clinic
+
+---
+
+### How It Benefits Users
+
+- **Administrators** can fully manage clinic and branch data from a single API without touching the database directly
+- **Medical staff** (doctors, nurses, receptionists, accountants) can view clinic and branch information they need for daily operations
+- **Data integrity** is protected — a clinic cannot be deleted while it still has branches, preventing orphaned records
+- **Main branch conflict** is automatically caught — the system rejects attempts to assign two main branches to the same clinic
+
+---
+
+### Technologies & Tools Used
+
+| Tool | Purpose |
+|------|---------|
+| Django REST Framework | API views, serializers, response handling |
+| `APIView` | Custom class-based views for full control over HTTP methods |
+| `ModelSerializer` | Automatic serialization of Clinic and Branch models |
+| `SerializerMethodField` | Dynamically computed `branch_count` field on clinic detail |
+| Custom Permissions | Role-based access (`IsAdmin`, `IsStaffWithAccountant`) |
+| `MultiPartParser` + `FormParser` | Logo file upload support alongside JSON data |
+| `validate()` method | Cross-field validation for `is_main` branch uniqueness per clinic |
+
+---
+
+### API Endpoints
+
+#### Clinic
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| GET | `/api/v1/clinics/` | List all clinics | Staff + Accountant |
+| POST | `/api/v1/clinics/` | Create a new clinic | Admin only |
+| GET | `/api/v1/clinics/{id}/` | Retrieve clinic details | Staff + Accountant |
+| PUT | `/api/v1/clinics/{id}/` | Update clinic | Admin only |
+| DELETE | `/api/v1/clinics/{id}/` | Delete clinic (no branches allowed) | Admin only |
+
+#### Branch
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| GET | `/api/v1/branches/` | List all branches | Staff + Accountant |
+| POST | `/api/v1/branches/` | Create a new branch | Admin only |
+| GET | `/api/v1/branches/{id}/` | Retrieve branch details | Staff + Accountant |
+| PUT | `/api/v1/branches/{id}/` | Update branch | Admin only |
+| DELETE | `/api/v1/branches/{id}/` | Delete branch | Admin only |
+
+---
+
+### Access Control
+
+| Role | List & View | Create, Update & Delete |
+|------|:-----------:|:-----------------------:|
+| ADMIN | ✅ | ✅ |
+| DOCTOR | ✅ | ❌ |
+| NURSE | ✅ | ❌ |
+| RECEPTIONIST | ✅ | ❌ |
+| ACCOUNTANT | ✅ | ❌ |
+| PATIENT | ❌ | ❌ |
+
+---
+
+### Business Rules
+
+- A clinic **cannot be deleted** if it has existing branches. All branches must be removed first.
+- Each clinic can have **only one main branch** (`is_main: true`). The API automatically rejects duplicate main branch assignments.
+- `branch_count` is a **read-only computed field** — it reflects the live count of branches linked to a clinic.
+- `clinic_name` on branch responses is **read-only** — it is resolved automatically from the related clinic.
+---
+
+# 🏥 Django REST API — Klinika va Filial boshqaruvi
+
+Bugun **Healthcare Management System** loyihasida Klinika va Filial modullari uchun to'liq REST API yozdim.
+
+---
+
+## 📦 Nimalarga erishdim?
+
+✅ **CRUD** — Yaratish, O'qish, Yangilash, O'chirish
+✅ **Pagination** — Sahifalash (10 tadan ko'rsatish)
+✅ **Filter + Search + Ordering** — Qidirish va saralash
+✅ **Cache** — Redis orqali tezlashtirish
+✅ **Logging** — Kim nima qilganini kuzatish
+✅ **Swagger** — Avtomatik API dokumentatsiya
+✅ **Role-based permission** — Rol asosida kirish nazorati
+✅ **select_related / prefetch_related** — DB optimizatsiya
+
+---
+
+## 🔐 Kirish nazorati
+
+| Rol | Ko'rish | Yaratish / Yangilash / O'chirish |
+|-----|:-------:|:--------------------------------:|
+| ADMIN | ✅ | ✅ |
+| DOCTOR | ✅ | ❌ |
+| NURSE | ✅ | ❌ |
+| RECEPTIONIST | ✅ | ❌ |
+| ACCOUNTANT |✅ | ❌ |
+| PATIENT | ❌ | ❌ |
+
+---
+
+## ⚙️ Ishlatilgan texnologiyalar
+
+| Vosita | Maqsadi |
+|--------|---------|
+| `Django REST Framework` | API asosi |
+| `APIView` | HTTP metodlarni nazorat qilish |
+| `ModelSerializer` | Modelni JSON ga aylantirish |
+| `django-filter` | Filter va qidirish |
+| `drf-spectacular` | Swagger dokumentatsiya |
+| `django-redis` | Cache |
+| `SerializerMethodField` | `branch_count` — dinamik hisoblash |
+| `select_related` | Branch → Clinic bir so'rovda |
+| `prefetch_related` | Clinic → Branches optimizatsiya |
+| `validate()` | `is_main` — bir klinikada faqat bitta bosh bino |
+| `logging` | Har bir o'chirish va yaratishni log qilish |
+
+---
+
+## 🚀 Qanday ishlaydi?
+
+**Cache** — har xil filter uchun har xil kalit:
+```
+clinics_list_?search=shifa  → alohida cache
+clinics_list_?is_active=true → alohida cache
+```
+Ma'lumot o'zgarganda cache avtomatik tozalanadi.
+
+**N+1 muammo hal qilindi:**
+```python
+# Har bir branch uchun alohida DB so'rovi o'rniga
+Branch.objects.select_related('clinic').all()
+# → 1 ta so'rovda hammasi keladi
+```
+
+**Biznes qoidalar:**
+- Klinikada filiallari bo'lsa — o'chirib bo'lmaydi
+- Har bir klinikada faqat 1 ta bosh filial (`is_main`) bo'lishi mumkin
+
+---
+
+## 📋 API Endpointlar
+
+```
+GET    /api/v1/clinics/          → Barcha klinikalar (filter, search, ordering)
+POST   /api/v1/clinics/          → Yangi klinika (Admin)
+GET    /api/v1/clinics/{id}/     → Klinika tafsiloti
+PUT    /api/v1/clinics/{id}/     → Yangilash (Admin)
+DELETE /api/v1/clinics/{id}/     → O'chirish (Admin)
+
+GET    /api/v1/branches/         → Barcha filiallar
+POST   /api/v1/branches/         → Yangi filial (Admin)
+GET    /api/v1/branches/{id}/    → Filial tafsiloti
+PUT    /api/v1/branches/{id}/    → Yangilash (Admin)
+DELETE /api/v1/branches/{id}/    → O'chirish (Admin)
+```
+
+---
+
+## 🐛 Yo'l-yo'lakay tuzatilgan xatolar
+
+- `has_permissions` → `has_permission` *(bir harf farq — barcha permission ishlamay qolgan edi)*
+- `get_object(pk)` → `get_object(self, pk)` *(self yo'qligi TypeError berardi)*
+- Cache va Filter aralashib ketgani tuzatildi
+- `search_fields` da `clinic` → `clinic__name` *(ForeignKey orqali qidirish)*
+- `delete` da `cache.delete_pattern` qo'shildi
+- `pagination_class` ikki marta yozilgani olib tashlandi
+
+---
+
+🔧 **Stack:** Python · Django · Django REST Framework · Redis · PostgreSQL
+
 ## 👨‍💻 Author
 
 **Akobir Marupov** — Backend Developer
