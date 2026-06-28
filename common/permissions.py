@@ -16,7 +16,7 @@ def check_role(request: Request, allowed_roles: list[str]) -> bool:
 class IsAdmin(permissions.BasePermission):
     message = 'Bu amal faqat Admin uchun ruxsat etilgan!'
 
-    def has_permissions(self, request: Request, view: APIView) -> bool:
+    def has_permission(self, request: Request, view: APIView) -> bool:
         return check_role(request, ['ADMIN'])
     
 
