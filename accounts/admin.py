@@ -31,6 +31,7 @@ class CustomUserAdmin(BaseUserAdmin, ModelAdmin):
     change_password_form = AdminPasswordChangeForm
 
     list_display = (
+        "id",
         "phone_number",
         "first_name",
         "last_name",

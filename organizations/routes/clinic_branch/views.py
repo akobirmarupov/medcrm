@@ -32,6 +32,7 @@ class ClinicListCreateAPIView(APIView):
     filterset_class = ClinicFilter
     search_fields = ['name', 'legal_name', 'phone']
     ordering_fields = ['name', 'created_at']
+    queryset = Clinic.objects.none()
 
 
     def get_permissions(self):
@@ -40,7 +41,7 @@ class ClinicListCreateAPIView(APIView):
         return [IsStaffWithAccountant()]
     
     
-    @extend_schema(summary="Barcha klinikalar", responses={200: ClinicSerializer(many=True)}, tags=["Clinics"])
+    @extend_schema(summary="Barcha klinikalar", responses={200: ClinicListSerializer(many=True)}, tags=["Clinics"])
     def get(self, request):
         cache_key = f"clinics_list_{request.query_params.urlencode()}"
         data = cache.get(cache_key)
@@ -66,6 +67,7 @@ class ClinicListCreateAPIView(APIView):
     @extend_schema(summary="Yangi klinika yaratish", request=ClinicSerializer, responses={201: ClinicSerializer}, tags=["Clinics"])
     def post(self, request):
         serializer = ClinicSerializer(data=request.data)
+        
         if serializer.is_valid():
             serializer.save()
             cache.delete_pattern("clinics_list_*")
@@ -77,6 +79,7 @@ class ClinicListCreateAPIView(APIView):
 
 class ClinicDetailAPIView(APIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
+    queryset = Clinic.objects.none()
 
     def get_permissions(self):
         if self.request.method == ('GET'):
@@ -105,11 +108,12 @@ class ClinicDetailAPIView(APIView):
     @extend_schema(summary="Klinikani yangilash", request=ClinicSerializer, responses={200: ClinicSerializer}, tags=["Clinics"])
     def put(self, request, pk):
         clinic = self.get_object(pk)
+
         if clinic is None:
             return Response(
                 {'detail': 'Klinika topilmadi.'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+                status=status.HTTP_404_NOT_FOUND)
+        
         serializer = ClinicSerializer(clinic, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -147,6 +151,7 @@ class BranchListCreateAPIView(APIView):
     filterset_class = BranchFilter
     search_fields = ['clinic__name', 'name', 'phone']
     ordering_fields = ['name', 'created_at']
+    queryset = Branch.objects.none()
 
     
     def get_permissions(self):
@@ -193,6 +198,7 @@ class BranchListCreateAPIView(APIView):
 
 class BranchDetailAPIView(APIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
+    queryset = Branch.objects.none()
 
     def get_permissions(self):
         if self.request.method == 'GET':
