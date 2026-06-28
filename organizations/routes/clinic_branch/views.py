@@ -21,6 +21,7 @@ class ClinicListCreateAPIView(APIView):
             return [IsAdmin()]
         return [IsStaffWithAccountant()]
     
+    
     def get(self, request):
         clinics = Clinic.objects.all().order_by('name')
         serializer = ClinicListSerializer(clinics, many=True)
@@ -93,3 +94,83 @@ class ClinicDetailAPIView(APIView):
             {'detail': 'Klinika muvaffaqiyatli o\'chirildi.'},
             status=status.HTTP_204_NO_CONTENT
         )
+
+
+
+class BranchListCreateAPIView(APIView):
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAdmin()]
+        return [IsStaffWithAccountant()]
+    
+
+    def get(self, request):
+        branch = Branch.objects.all().order_by('name')
+        serializer = BranchListSerializer(branch, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+    def post(self, request):
+        serializer = BranchSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    
+
+class BranchDetailAPIView(APIView):
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsStaffWithAccountant()]
+        return [IsAdmin()]
+    
+
+    def get_object(self, pk):
+        try:
+            return Branch.objects.get(pk=pk)
+        except Branch.DoesNotExist:
+            return None
+        
+    
+    def get(self, request, pk):
+        branch = self.get_object(pk)
+
+        if branch is None:
+            return Response({"detail": "Clinika filiali topilmadi."},
+                            status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = BranchSerializer(branch)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+    def put(self, request, pk):
+        branch = self.get_object(pk)
+
+        if branch is None:
+            return Response({"detail": "Clinika filiali  topilmadi."},
+                             status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = BranchSerializer(branch, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+    def delete(self, request, pk):
+        branch = self.get_object(pk)
+
+        if branch is None:
+            return Response({"detail": "Clinika filiali topilmadi."},
+                             status=status.HTTP_404_NOT_FOUND)
+        
+        branch.delete()
+        return Response({"detail": "Clinika filiali muvaffaqiyatli o'chirildi."},
+                        status=status.HTTP_204_NO_CONTENT)
