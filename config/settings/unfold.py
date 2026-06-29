@@ -107,6 +107,17 @@ UNFOLD = {
                     {"title": "API Tokenlar", "icon": "key", "link": "/admin/authtoken/tokenproxy/"},
                 ],
             },
+            {
+                "title": "Bemorlar (Patients)",
+                "separator": True,
+                "collapsible": False,
+                "items": [
+                    {"title": "Bemorlar", "icon": "personal_injury", "link": "/admin/patients/patient/"},
+                    {"title": "Tibbiy yozuvlar (Tashxis)", "icon": "description", "link": "/admin/patients/medicalrecord/"},
+                    {"title": "Allergiyalar", "icon": "vaccines", "link": "/admin/patients/patientallergy/"},
+                    {"title": "Surunkali kasalliklar", "icon": "monitor_heart", "link": "/admin/patients/patientchronicdisease/"},
+                ],
+            },
         ],
     },
 }

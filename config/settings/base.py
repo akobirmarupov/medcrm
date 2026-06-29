@@ -37,6 +37,7 @@ LOCAL_APPS = [
     'accounts',
     'common',
     'organizations',
+    'patients',
 ]
 
 EXTERNAL_APPS = [
