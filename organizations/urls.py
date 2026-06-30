@@ -1,5 +1,3 @@
-# organizations/clinic_branch/urls.py
-
 from django.urls import path
 from organizations.routes.clinic_branch.views import (
     ClinicListCreateAPIView, ClinicDetailAPIView,

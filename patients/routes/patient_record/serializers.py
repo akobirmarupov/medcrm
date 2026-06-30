@@ -61,6 +61,3 @@ class MedicalRecordSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['doctor', 'doctor_name', 'patient_name', 'created_at']
 
-    def create(self, validated_data):
-        validated_data['doctor'] = self.context['request'].user
-        return super().create(validated_data)
