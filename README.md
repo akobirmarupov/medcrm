@@ -396,6 +396,153 @@ DELETE /api/v1/branches/{id}/    → O'chirish (Admin)
 
 🔧 **Stack:** Python · Django · Django REST Framework · Redis · PostgreSQL
 
+
+
+# 🏥 MedCRM — Patients & Medical Records Module
+
+Klinika/shifoxona uchun mo'ljallangan **Bemorlar (Patients)** va **Tibbiy yozuvlar (Medical Records)** moduli. Ushbu modul orqali bemorlarni ro'yxatga olish, ularning tibbiy tarixini yuritish, shifokorlarning tashxis va kuzatuvlarini saqlash kabi funksiyalar amalga oshiriladi.
+
+---
+
+## 📌 Loyiha haqida
+
+Bu modul **Django REST Framework (DRF)** asosida qurilgan bo'lib, real klinika tizimida ishlatiladigan rol-asoslangan ruxsatlar (role-based permissions), keshlash (caching), filtrlash, qidiruv, paginatsiya va loglash kabi production-ready funksiyalarni o'z ichiga oladi.
+
+---
+
+## ⚙️ Asosiy funksionalliklar
+
+### 1. Bemorlar bilan ishlash (Patients)
+- ✅ Bemorlar ro'yxatini olish (filtrlash, qidiruv, saralash, paginatsiya bilan)
+- ✅ Yangi bemor yaratish
+- ✅ Bemor profilini ko'rish (tafsilotlar bilan)
+- ✅ Bemor ma'lumotlarini yangilash
+- ✅ Bemorni o'chirish (faqat tibbiy yozuvlari bo'lmagan holatda)
+
+### 2. Tibbiy yozuvlar bilan ishlash (Medical Records)
+- ✅ Tibbiy yozuvlar ro'yxatini olish (rolga qarab filtrlangan)
+- ✅ Yangi tibbiy yozuv yaratish (tashxis, kuzatuv, fayl biriktirish bilan)
+- ✅ Yozuv tafsilotini ko'rish
+- ✅ Yozuvni yangilash (faqat yozuvni yozgan shifokor)
+- ✅ Yozuvni o'chirish
+
+### 3. Qo'shimcha imkoniyatlar
+- 🔍 **Filtrlash** — `django_filter` orqali `PatientFilter` va `MedicalRecordFilter`
+- 🔎 **Qidiruv** — ism, familiya, telefon raqami, PINFL bo'yicha qidirish
+- ↕️ **Saralash** — yaratilgan sana, PINFL bo'yicha
+- 📄 **Paginatsiya** — `StandardPagination` orqali standartlashtirilgan sahifalash
+- ⚡ **Keshlash (Redis/cache)** — ro'yxat so'rovlari 5 daqiqaga keshlanadi, yozuv yaratilganda/yangilanganda kesh avtomatik tozalanadi
+- 📝 **Loglash** — har bir CREATE/UPDATE/DELETE amali `logger`orqali yoziladi (audit trail)
+- 📎 **Fayl biriktirish** — `MultiPartParser` orqali tibbiy hujjat/rasm yuklash imkoniyati
+- 📚 **Swagger/OpenAPI hujjatlashtirish** — `drf-spectacular` orqali har bir endpoint avtomatik hujjatlangan
+
+---
+
+## 👥 Rollar va ruxsatlar (Permissions)
+
+Tizimda har bir foydalanuvchi roli (`role`) asosida turlicha huquqlarga ega:
+
+| Rol | Bemorlar ro'yxati | Bemor yaratish | Bemor tahrirlash | Bemor o'chirish | Tibbiy yozuv ko'rish | Tibbiy yozuv yaratish | Tibbiy yozuv tahrirlash | Tibbiy yozuv o'chirish |
+|---|---|---|---|---|---|---|---|---|
+| **Admin** | ✅ Barchasi | ✅ | ✅ | ✅ | ✅ Barchasi | ✅ | ✅ | ✅ |
+| **Receptionist (Resepshn)** | ✅ Barchasi | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **Doctor (Shifokor)** | ✅ Faqat o'zi davolagan bemorlar | ❌ | ✅ | ❌ | ✅ Faqat o'zi yozgan yozuvlar | ✅ | ✅ Faqat o'zi yozgan | ❌ |
+| **Patient (Bemor)** | ❌ | ❌ | ❌ | ❌ | ✅ Faqat o'ziga tegishli | ❌ | ❌ | ❌ |
+| **Nurse / Accountant** | Cheklangan (kombinatsiyaga qarab) | — | — | — | — | — | — | — |
+
+> Ruxsatlar `common.permissions` modulidagi `IsAdmin`, `IsDoctor`, `IsReceptionist`, `IsNurse`, `IsPatient`, `IsStaffWithAccountant`, `IsOwnerOrMedicalStaff` klasslari orqali boshqariladi va har bir endpoint uchun `get_permissions()` metodida moslashtiriladi.
+
+### Rol bo'yicha real misollar:
+- **Shifokor** faqat o'zi yozgan tibbiy yozuvlarni ko'radi va tahrirlay oladi — boshqa shifokorning yozuvini o'zgartira olmaydi.
+- **Bemor** faqat o'z tibbiy tarixini ko'radi, boshqa bemorlarning ma'lumotlariga kira olmaydi.
+- **Admin** tizimdagi barcha ma'lumotlarga to'liq kirish huquqiga ega.
+- **Resepshn** yangi bemorlarni ro'yxatga oladi, lekin tibbiy yozuvlarga aralashmaydi (bu — shifokorning vazifasi).
+
+---
+
+## 🔐 Xavfsizlik va biznes-qoidalar
+
+- Bemorni o'chirishdan oldin uning tibbiy yozuvlari mavjudligi tekshiriladi — agar mavjud bo'lsa, o'chirish bloklanadi (ma'lumotlar yo'qolib ketmasligi uchun):
+  ```python
+  if patient.medical_records.exists():
+      return Response({"detail": "Bemorning tibbiy yozuvlari mavjud..."}, status=400)
+  ```
+- Shifokor faqat **o'zi yozgan** tibbiy yozuvni tahrirlashi mumkin (`record.doctor_id != request.user.id` tekshiruvi).
+- Bemor profiliga kirishda, agar so'rov yuborayotgan foydalanuvchi `PATIENT` bo'lsa, faqat **o'z** profiliga kirish huquqi beriladi.
+- `doctor` maydoni foydalanuvchi tomonidan yuborilmaydi — u avtomatik token orqali (`request.user`) biriktiriladi, bu soxta ma'lumot kiritilishining oldini oladi.
+
+---
+
+## 🧰 Texnologiyalar va yondashuvlar
+
+| Texnologiya / Pattern | Maqsadi |
+|---|---|
+| Django REST Framework (`APIView`) | API endpointlarni qo'lda, to'liq nazorat bilan qurish |
+| `django-filter` | Murakkab filtrlash logikasi (`PatientFilter`, `MedicalRecordFilter`) |
+| DRF `SearchFilter`, `OrderingFilter` | Qidiruv va saralash |
+| `cache` (Redis/Memcached) | Tez-tez so'raladigan ro'yxatlarni keshlash, performance optimallashtirish |
+| `drf-spectacular` | Avtomatik Swagger/OpenAPI hujjatlari (`@extend_schema`) |
+| `logging` | Har bir muhim amal uchun audit log (kim, qachon, nima qildi) |
+| Custom Permission classes | Rol-asoslangan kirish nazorati (RBAC) |
+| `select_related` | N+1 so'rov muammosini oldini olish, DB optimizatsiyasi |
+| `MultiPartParser`, `FormParser`, `JSONParser` | JSON va fayl (multipart) so'rovlarini bir xil endpointda qabul qilish |
+
+---
+
+## 📂 API Endpointlar
+
+### Patients
+| Method | Endpoint | Tavsif | Ruxsat |
+|---|---|---|---|
+| `GET` | `/patient/` | Bemorlar ro'yxati | Admin, Receptionist, Doctor |
+| `POST` | `/patient/` | Yangi bemor yaratish | Admin, Receptionist |
+| `GET` | `/patient/<pk>/` | Bemor profili | Staff, Owner |
+| `PUT` | `/patient/<pk>/` | Bemorni yangilash | Admin, Receptionist, Doctor |
+| `DELETE` | `/patient/<pk>/` | Bemorni o'chirish | Admin |
+
+### Medical Records
+| Method | Endpoint | Tavsif | Ruxsat |
+|---|---|---|---|
+| `GET` | `/medical_record/` | Tibbiy yozuvlar ro'yxati | Admin, Doctor, Patient |
+| `POST` | `/medical_record/` | Yangi yozuv yaratish | Doctor, Admin |
+| `GET` | `/medical_record/<pk>/` | Yozuv tafsiloti | Admin, Doctor, Patient |
+| `PUT` | `/medical_record/<pk>/` | Yozuvni yangilash | Admin, Doctor (faqat o'ziniki) |
+| `DELETE` | `/medical_record/<pk>/` | Yozuvni o'chirish | Admin, Doctor |
+
+---
+
+## 🚀 Ishga tushirish
+
+```bash
+git clone <repo-url>
+cd MedCore/medcrm
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
+
+Swagger hujjatlarini ko'rish uchun: `/api/schema/swagger-ui/`
+
+---
+
+## 🛣️ Keyingi rejalar (Roadmap)
+
+- [ ] Tibbiy yozuvlarga ko'p fayl biriktirish imkoniyati
+- [ ] Bemor uchun PDF formatdagi tibbiy tarix hisobotini eksport qilish
+- [ ] WebSocket orqali real-time bildirishnomalar (yangi yozuv qo'shilganda)
+- [ ] Unit va integration testlar qamrovini kengaytirish
+
+---
+
+## 👨‍💻 Muallif
+
+Loyiha **MedCRM** tizimining bir qismi sifatida ishlab chiqilgan.
+
 ## 👨‍💻 Author
 
 **Akobir Marupov** — Backend Developer
+
+
+
