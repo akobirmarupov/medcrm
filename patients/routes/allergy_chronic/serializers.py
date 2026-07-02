@@ -44,6 +44,7 @@ class PatientAllergyWriteSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "patient": {"required": False},
         }
+        validators = []
 
     def validate_allergen(self, value):
         value = value.strip()
