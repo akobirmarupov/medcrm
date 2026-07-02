@@ -4,7 +4,7 @@ from patients.routes.patient_record.views import(
     MedicalRecordListCreateAPIView, MedicalRecordDetailAPIView
 )
 from patients.routes.allergy_chronic.views import (
-    PatientAllergyListCreateAPIView
+    PatientAllergyListCreateAPIView, PatientAllergyDetailAPIView
 )
 
 
@@ -20,5 +20,5 @@ urlpatterns = [
 
     #allergy
     path('allergy/', PatientAllergyListCreateAPIView.as_view(), name='allergy-list-create'),
-
+    path('allergy/<int:pk>/', PatientAllergyDetailAPIView.as_view(), name='allergy-detail'),
 ]

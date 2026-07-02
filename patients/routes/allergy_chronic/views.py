@@ -14,7 +14,7 @@ import logging
 
 from common.permissions import (
     IsAdmin, IsDoctor, IsReceptionist, IsNurse, IsPatient,
-    IsStaffWithAccountant, IsOwnerOrMedicalStaff,
+    IsStaffWithAccountant, IsOwnerOrMedicalStaff, IsMedicalStaff
 )
 from patients.routes.allergy_chronic.serializers import (
     PatientAllergyReadSerializer, PatientAllergyWriteSerializer,
@@ -84,3 +84,44 @@ class PatientAllergyListCreateAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
         
+
+
+class PatientAllergyDetailAPIView(APIView):
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+    qeryset = PatientAllergy.objects.none()
+    owner_field = 'user'
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [(IsMedicalStaff | IsPatient)()]
+        return [(IsAdmin | IsDoctor)()]
+    
+    def get_object(self, pk):
+        try:
+            return PatientAllergy.objects.select_related(
+                'patient__user', 'patient__user__profile'
+            ).get(pk=pk)
+        except PatientAllergy.DoesNotExist:
+            return None
+
+    def check_access(self, request, allergy) -> bool:
+        role = getattr(request.user, 'role', None)
+        if role == 'DOCTOR':
+            return allergy.patient.medical_records.filter(doctor=request.user).exists()
+        if role == 'PATIENT':
+            return allergy.patient.user_id == request.user.id
+        return True
+    
+
+    @extend_schema(summary="Allergiya tafsiloti", responses={200: PatientAllergyReadSerializer}, tags=["Allergy"])
+    def get(self, request, pk):
+        allergy = self.get_object(pk)
+
+        if allergy is None:
+            return Response({"detail": "Allergiya topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+
+        if not self.check_access(request, allergy):
+            return Response({"detail": "Ushbu yozuvga ruxsatingiz yo'q."}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = PatientAllergyReadSerializer(allergy)
+        return Response(serializer.data, status=status.HTTP_200_OK)
