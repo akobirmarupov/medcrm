@@ -118,6 +118,16 @@ UNFOLD = {
                     {"title": "Surunkali kasalliklar", "icon": "monitor_heart", "link": "/admin/patients/patientchronicdisease/"},
                 ],
             },
+            {
+                "title": "Navbatlar (Appointments)",
+                "separator": True,
+                "collapsible": False,
+                "items": [
+                    {"title": "Uchrashuvlar", "icon": "calendar_month", "link": "/admin/appointments/appointment/"},
+                    {"title": "Navbat holati", "icon": "confirmation_number", "link": "/admin/appointments/queue/"},
+                    {"title": "Qabullar (Visit)", "icon": "assignment_turned_in", "link": "/admin/appointments/visit/"},
+                ],
+            },
         ],
     },
 }
