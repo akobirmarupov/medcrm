@@ -15,10 +15,9 @@ class DoctorMiniSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'full_name', 'phone_number']
 
-
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip()
-    
+
 
 
 class PatientMiniSerializer(serializers.ModelSerializer):
@@ -29,8 +28,8 @@ class PatientMiniSerializer(serializers.ModelSerializer):
         fields = ['id', 'full_name']
 
     def get_full_name(self, obj):
-        return f"{obj.user.firs_name} {obj.user.last_name}"
-    
+        return f"{obj.user.first_name} {obj.user.last_name}".strip()
+
 
 class RoomMiniSerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,10 +39,10 @@ class RoomMiniSerializer(serializers.ModelSerializer):
 
 
 class AppointmentListSerializer(serializers.ModelSerializer):
-    patient = PatientMiniSerializer(read_only = True)
-    doctor = DoctorMiniSerializer(read_only = True)
-    room = RoomMiniSerializer(read_obly = True)
-    status_display = serializers.CharField(source = "get_status_display", read_only = True)
+    patient = PatientMiniSerializer(read_only=True)
+    doctor = DoctorMiniSerializer(read_only=True)
+    room = RoomMiniSerializer(read_only=True)
+    status_display = serializers.CharField(source="get_status_display", read_only=True)
 
     class Meta:
         model = Appointment
@@ -60,15 +59,14 @@ class AppointmentListSerializer(serializers.ModelSerializer):
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
-    patient = serializers.PrimaryKeyRelatedField(queryset = Patient.objects.all())
-    doctor = serializers.PrimaryKeyRelatedField(queryset = User.objects.filter(role = 'DOCTOR'))
-    room = serializers.PrimaryKeyRelatedField(queryset = Room.objects.all(), required = False, allow_null = True)
+    patient = serializers.PrimaryKeyRelatedField(queryset=Patient.objects.all())
+    doctor = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(role='DOCTOR'))
+    room = serializers.PrimaryKeyRelatedField(queryset=Room.objects.all(), required=False, allow_null=True)
 
-    patient_detail = PatientMiniSerializer(source = 'patient', read_only = True)
-    doctor_detail = DoctorMiniSerializer(source = 'doctor', read_only = True)
-    room_detail = RoomMiniSerializer(source = 'room', read_only = True)
-    status_display = serializers.CharField(source = 'get_status_display', read_only = True)
-
+    patient_detail = PatientMiniSerializer(source='patient', read_only=True)
+    doctor_detail = DoctorMiniSerializer(source='doctor', read_only=True)
+    room_detail = RoomMiniSerializer(source='room', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
 
     class Meta:
         model = Appointment
@@ -87,29 +85,30 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-
         read_only_fields = ["status", "created_at", "updated_at"]
 
-        def validate_schedulet_at(self, value):
-            if value < timezone.now():
-                raise serializers.ValidationError(
-                    "Uchrashuv vaqti o'tgan vaqtda bo'lishi mumkin emas.")
-            return value
-        
-        def validate(self, attrs):
-            doctor = attrs.get('doctor', getattr(self.instamce, 'doctor', None))
-            scheduet_ad = attrs.get('scheduled_at', getattr(self.istance, 'scheduled_at', None))
+   
+    def validate_scheduled_at(self, value):
+        if value < timezone.now():
+            raise serializers.ValidationError(
+                "Uchrashuv vaqti o'tgan vaqtda bo'lishi mumkin emas.")
+        return value
 
-            if doctor and scheduet_ad:
-                qs = Appointment.objects.filter(doctor=doctor, scheduet_ad=scheduet_ad)
-                
-                if self.instance:
-                    qs = qs.exclude(pk=self.instance.pk)
-                
-                if qs.exists():
-                    raise serializers.ValidationError({"scheduled_at": "Bu shifokor shu vaqtda band!"})
-                return attrs
-            
+   
+    def validate(self, attrs):
+        doctor = attrs.get('doctor', getattr(self.instance, 'doctor', None))
+        scheduled_at = attrs.get('scheduled_at', getattr(self.instance, 'scheduled_at', None))
+
+        if doctor and scheduled_at:
+            qs = Appointment.objects.filter(doctor=doctor, scheduled_at=scheduled_at)
+
+            if self.instance:
+                qs = qs.exclude(pk=self.instance.pk)
+
+            if qs.exists():
+                raise serializers.ValidationError({"scheduled_at": "Bu shifokor shu vaqtda band!"})
+
+        return attrs
 
 
 class AppointmentStatusUpdateSerializer(serializers.ModelSerializer):
@@ -125,7 +124,7 @@ class AppointmentStatusUpdateSerializer(serializers.ModelSerializer):
         Appointment.Status.CANCELLED: set(),
         Appointment.Status.NO_SHOW: set(),
     }
- 
+
     def validate_status(self, value):
         current = self.instance.status
         allowed = self.ALLOWED_TRANSITIONS.get(current, set())
@@ -134,7 +133,7 @@ class AppointmentStatusUpdateSerializer(serializers.ModelSerializer):
                 f"'{current}' holatidan '{value}' holatiga o'tib bo'lmaydi."
             )
         return value
-    
+
 
 class QueueListSerializer(serializers.ModelSerializer):
     patient_name = serializers.SerializerMethodField()
@@ -151,17 +150,16 @@ class QueueListSerializer(serializers.ModelSerializer):
             "doctor_name",
         ]
 
-        def get_patient(self, obj):
-            return str(obj.appointment.patient)
-        
-        def get_doctor_name(self, obj):
-            return str(obj.appointment.doctor)
-        
+    def get_patient_name(self, obj):
+        return str(obj.appointment.patient)
+
+    def get_doctor_name(self, obj):
+        return str(obj.appointment.doctor)
 
 
 class QueueSerializer(serializers.ModelSerializer):
     appointment = AppointmentListSerializer(read_only=True)
- 
+
     class Meta:
         model = Queue
         fields = ["id", "appointment", "queue_number", "status", "called_at"]
@@ -172,7 +170,7 @@ class QueueSerializer(serializers.ModelSerializer):
 class VisitSerializer(serializers.ModelSerializer):
     appointment = AppointmentListSerializer(read_only=True)
     duration_minutes = serializers.ReadOnlyField()
- 
+
     class Meta:
         model = Visit
         fields = [
@@ -188,10 +186,13 @@ class VisitSerializer(serializers.ModelSerializer):
 
 
 
-
 class VisitCloseSerializer(serializers.ModelSerializer):
     notes = serializers.CharField(required=False, allow_blank=True)
- 
+
+    class Meta:
+        model = Visit
+        fields = ["notes"]
+
     def save(self, **kwargs):
         visit = self.context["visit"]
         if "notes" in self.validated_data:

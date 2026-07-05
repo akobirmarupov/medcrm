@@ -185,6 +185,10 @@ class VisitAdmin(ModelAdmin):
     @admin.display(description="Shifokor")
     def get_doctor(self, obj):
         return obj.appointment.doctor
+    
+    def get_queryset(self, request):
+        qs = self.model.all_objects.all()  # is_deleted filtrini chetlab o'tadigan manager
+        return qs
 
     fieldsets = (
         (
