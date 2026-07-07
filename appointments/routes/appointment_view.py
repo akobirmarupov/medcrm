@@ -102,3 +102,41 @@ class AppointmentDetailAPIView(APIView):
         
         serializer = AppointmentSerializer(appointment)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+
+class AppointmentTodayAPIView(APIView):
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+    pagination_class = StandardPagination
+    queryset = Appointment.objects.none()
+
+    def get_permissions(self):
+        return [(IsAdmin | IsDoctor | IsNurse | IsReceptionist)()]
+    
+
+    @extend_schema(summary='Bugungi navbat.', responses={200: AppointmentListSerializer}, tags=['Appointment'])
+    def get(self, request):
+        today = timezone.localdate()
+        cache_key = f"appointments_today_{today}_{request.user.role}_{request.user.id}"
+        data = cache.get(cache_key)
+        
+        if data is None:
+            #buyerda select_related bolgani sababi modelda forinekey bolgani uchun ishlatildi
+            #scheduled_at__date vatqlarni kesib tashab today dagi kun oy yil bilan tenglashtirib beradi
+            #order_by esa scheduled_at orqali ertalabdan boshlab kechgacha bolgan vaqtlardagi navbatlarni tartib bilan chiqaradi.
+            appointment = (Appointment.objects.select_related('patient__user', 'doctor', 'room')
+                           .filter(scheduled_at__date=today).order_by('scheduled_at'))
+
+            if request.user.role == 'DOCTOR':
+                appointment = appointment.filter(doctor=request.user)
+
+            paginator = self.pagination_class()
+            page = paginator.paginate_queryset(appointment, request)
+            serializer = AppointmentListSerializer(page, many=True)
+
+            data = paginator.get_paginated_response(serializer.data).data
+            cache.set(cache_key, data, timeout=30)
+
+        return Response(data, status=status.HTTP_200_OK)
+    
+
