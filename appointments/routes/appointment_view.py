@@ -140,3 +140,38 @@ class AppointmentTodayAPIView(APIView):
         return Response(data, status=status.HTTP_200_OK)
     
 
+
+class AppointmentStatusUpdateAPIView(APIView):
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+    queryset = Appointment.objects.none()
+
+    def get_permissions(self):
+        return [(IsDoctor | IsReceptionist)()]
+    
+    def get_object(self, pk):
+        try:
+            return Appointment.objects.get(pk=pk)
+        except Appointment.DoesNotExist:
+            return None
+        
+    @extend_schema(summary="Navbat statusini o'zgartirish",request=AppointmentStatusUpdateSerializer,
+        responses={200: AppointmentStatusUpdateSerializer},tags=["Appointments"],)
+    def patch(self, request, pk):
+        appointment = self.get_object(pk)
+
+        if appointment is None:
+            return Response({"detail": "Navbat topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+        
+        if request.user.role == 'DOCTOR' and appointment.doctor_id != request.user.id:
+            return Response({"detail": "Bu navbat sizga tegishli emas."}, status=status.HTTP_403_FORBIDDEN)
+        
+        serializer = AppointmentStatusUpdateSerializer(appointment, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            cache.delete_pattern("appointments_list_*")
+            cache.delete_pattern("appointments_today*_")
+            logger.info(
+                f"[STATUS] Appointment id={appointment.id} -> {appointment.status} - user: {request.user}")
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
